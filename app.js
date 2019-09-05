@@ -26,7 +26,7 @@ app.get("/", (req, res) => {
       useUnifiedTopology: true
     },
     (err, dbinfo) => {
-      if (err) throw err;
+      if (err) console.log(err);
       const db = dbinfo.db("ToDo");
       db.collection("list")
         .find({})
