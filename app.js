@@ -1,22 +1,21 @@
 const express = require("express");
 const cors = require("cors");
 const MongoClient = require("mongodb").MongoClient;
-const ObjectId = require("mongodb").ObjectID;
+const ObjectId = require("mongodb").ObjectID; //converts ID from str to Mongo Atlas' format of "ObjectId", since that is the way Mongo Atlas stores the "_id"
+require('dotenv').config()
 
 const app = express();
 const port = process.env.PORT || 4000;
-const db_url =
-  "mongodb+srv://bc-75:Mongo1234@cluster0-nh7ew.mongodb.net/ToDo?retryWrites=true&w=majority";
+const db_url = process.env.DB_CONNECT
 
 const client = new MongoClient(db_url, {
   useNewUrlParser: true,
   useUnifiedTopology: true
 });
 
-app.use(express.json());
+app.use(express.json()); //parses incoming JSON for the info the recipient is interested in (JSON payloads); the other info is protocol overhead (status, etc.)
 app.use(cors());
 
-let data = [];
 
 app.get("/", (req, res) => {
   MongoClient.connect(
@@ -30,7 +29,7 @@ app.get("/", (req, res) => {
       const db = dbinfo.db("ToDo");
       db.collection("list")
         .find({})
-        .toArray((err, item) => {
+        .toArray((err, item) => { //'item' = each entry in DB
           if (err) throw err;
           res.status(200).send(item);
         });
@@ -51,14 +50,13 @@ app.get("/", (req, res) => {
 
 app.post("/", (req, res) => {
   const body = req.body;
-
   MongoClient.connect(
     db_url,
     {
       useNewUrlParser: true,
       useUnifiedTopology: true
     },
-    (err, dbinfo) => {
+    (err, dbinfo) => { //explain
       if (err) throw err;
       const db = dbinfo.db("ToDo");
       db.collection("list").insertOne(body, (err, item) => {
