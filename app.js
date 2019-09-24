@@ -2,20 +2,19 @@ const express = require("express");
 const cors = require("cors");
 const MongoClient = require("mongodb").MongoClient;
 const ObjectId = require("mongodb").ObjectID; //converts ID from str to Mongo Atlas' format of "ObjectId", since that is the way Mongo Atlas stores the "_id"
-require('dotenv').config()
+require("dotenv").config();
 
 const app = express();
 const port = process.env.PORT || 4000;
-const db_url = process.env.DB_CONNECT
+const db_url = process.env.DB_CONNECT;
 
 const client = new MongoClient(db_url, {
-  useNewUrlParser: true,
+  useNewUrlParser: true, //specifies that the new type of url string from mongo atlas is being used
   useUnifiedTopology: true
 });
 
-app.use(express.json()); //parses incoming JSON for the info the recipient is interested in (JSON payloads); the other info is protocol overhead (status, etc.)
+app.use(express.json()); //parses incoming JSON for the info the recipient is 'interested in' (JSON payloads); the other info is protocol overhead (status, etc.)
 app.use(cors());
-
 
 app.get("/", (req, res) => {
   MongoClient.connect(
@@ -29,23 +28,14 @@ app.get("/", (req, res) => {
       const db = dbinfo.db("ToDo");
       db.collection("list")
         .find({})
-        .toArray((err, item) => { //'item' = each entry in DB
+        .toArray((err, item) => {
+          //'item' = each entry in DB
           if (err) throw err;
           res.status(200).send(item);
         });
       client.close();
     }
   );
-  // client.connect(err => {
-  //   if(!err){
-  //   const collection = client.db("ToDo").collection("list");
-  //   const results = collection.find({}).toArray((err, docs) => {
-  //     res.send(docs);
-  //   });
-  //   client.close();
-  // }else console.log(err)
-  // client.close()
-  // });
 });
 
 app.post("/", (req, res) => {
@@ -56,24 +46,18 @@ app.post("/", (req, res) => {
       useNewUrlParser: true,
       useUnifiedTopology: true
     },
-    (err, dbinfo) => { //explain
+    (err, dbinfo) => {
+      //callback function for DB connection. 1st arg is an error object, in case error occurs. 2nd param is the DB object (contains DB info)
       if (err) throw err;
-      const db = dbinfo.db("ToDo");
+      const db = dbinfo.db("ToDo"); //DB name
       db.collection("list").insertOne(body, (err, item) => {
+        //inserts body rec'd from api into collection
         if (err) throw err;
         res.status(200).send(item);
       });
       client.close();
     }
   );
-
-  // client.connect(async err => {
-  //   const collection = client.db("ToDo").collection("list");
-  //   const results = await collection.insertOne(body);
-  //   res.send(results.insertedId);
-  //   console.log(results.insertedId);
-  //   client.close();
-  // });
 });
 
 app.put("/:ID", (req, res) => {
@@ -99,16 +83,6 @@ app.put("/:ID", (req, res) => {
       client.close();
     }
   );
-
-  // client.connect(async err => {
-  //   const collection = client.db("ToDo").collection("list");
-  //   const results = await collection.updateMany(
-  //     { _id: ObjectId(req.params.ID) },
-  //     { $set: body }
-  //   );
-  //   res.send(results);
-  //   client.close();
-  // });
 });
 
 app.delete("/:ID", (req, res) => {
@@ -127,7 +101,7 @@ app.delete("/:ID", (req, res) => {
         },
         (err, item) => {
           if (err) throw err;
-          res.status(200).send(item);
+          res.status(200).send(item); //Sets  the HTTP status for the response. Sends HTTP response
         }
       );
       client.close();
@@ -135,14 +109,6 @@ app.delete("/:ID", (req, res) => {
   );
 });
 
-// app.delete("/:ID", (req, res) => {
-//   client.connect(async err => {
-//     const collection = client.db("ToDo").collection("list");
-//     const results = await collection.deleteOne({
-//       _id: ObjectId(req.params.ID)
-//     });
-//     res.send(results);
-//     client.close();
-//   });
-// });
-app.listen(port, () => {console.log(`Example app listening on port ${port}!`)});
+app.listen(port, () => {
+  console.log(`Example app listening on port ${port}!`);
+});
